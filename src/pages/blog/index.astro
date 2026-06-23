@@ -6,31 +6,135 @@ import { getCollection } from "astro:content";
 const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
 );
+
+// Couleurs de badge par catégorie (cf. content.config.ts : comparatif | tutoriel | avis | guide).
+const CATEGORY_STYLES: Record<string, { label: string; bg: string; color: string }> = {
+  comparatif: { label: "Comparatif", bg: "#e1f5ee", color: "#1d9e75" },
+  guide: { label: "Guide", bg: "#eeeaf9", color: "#7a5bc7" },
+  tutoriel: { label: "Tutoriel", bg: "#eeeaf9", color: "#7a5bc7" },
+  avis: { label: "Avis", bg: "#faeeda", color: "#854f0b" },
+};
+
+const categoryStyle = (category: string) =>
+  CATEGORY_STYLES[category] ?? {
+    label: category.charAt(0).toUpperCase() + category.slice(1),
+    bg: "var(--border)",
+    color: "var(--text-2)",
+  };
 ---
 
 <BaseLayout title="Blog — Comparatifs et guides" description="Tous nos comparatifs, tests et guides.">
-  <h1>Le blog</h1>
-  <ul class="post-list">
-    {posts.map((post) => (
-      <li>
-        <a href={`/blog/${post.id}`}>
-          <strong>{post.data.title}</strong>
-          <time datetime={post.data.pubDate.toISOString()}>
-            {post.data.pubDate.toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })}
-          </time>
-          <span>{post.data.description}</span>
-        </a>
-      </li>
-    ))}
-  </ul>
+  <header class="blog-head">
+    <h1>Le blog</h1>
+    <p class="blog-intro">
+      Comparatifs, tests et guides sur les outils IA pour créateurs — tous
+      écrits après usage réel.
+    </p>
+  </header>
+
+  {posts.length > 0 ? (
+    <div class="posts-grid">
+      {posts.map((post) => {
+        const cat = categoryStyle(post.data.category);
+        return (
+          <article class="card">
+            <a class="card-link" href={`/blog/${post.id}`}>
+              <span class="badge" style={`background:${cat.bg};color:${cat.color};`}>
+                {cat.label}
+              </span>
+              <h2 class="card-title">{post.data.title}</h2>
+              <time class="card-date" datetime={post.data.pubDate.toISOString()}>
+                {post.data.pubDate.toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })}
+              </time>
+              <p class="card-desc">{post.data.description}</p>
+            </a>
+          </article>
+        );
+      })}
+    </div>
+  ) : (
+    <p class="empty">Les premiers articles arrivent très bientôt.</p>
+  )}
 
   <style>
-    .post-list { list-style: none; padding: 0; }
-    .post-list li { border: 1px solid #eee; border-radius: 10px; margin-bottom: 1rem; }
-    .post-list a { display: block; padding: 1.25rem; text-decoration: none; color: var(--text); }
-    .post-list a:hover { background: #fafafa; }
-    .post-list strong { display: block; color: var(--accent); font-size: 1.1rem; }
-    .post-list time { display: block; color: var(--muted); font-size: 0.85rem; margin: 0.2rem 0 0.4rem; }
-    .post-list span { color: var(--muted); }
+    /* ---------- EN-TÊTE ---------- */
+    .blog-head { margin-bottom: 3rem; }
+    .blog-head h1 { font-size: 2.6rem; margin: 0 0 0.75rem; }
+    .blog-intro {
+      color: var(--text-2);
+      font-size: 1.15rem;
+      max-width: 620px;
+      margin: 0;
+    }
+
+    /* ---------- GRILLE DE CARTES (cohérente avec l'accueil) ---------- */
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+    }
+    .card:hover {
+      box-shadow: 0 12px 30px rgba(45, 36, 86, 0.08);
+      transform: translateY(-2px);
+      border-color: #e0dbd0;
+    }
+    .card-link {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      height: 100%;
+      padding: 1.5rem;
+      text-decoration: none;
+      color: inherit;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+    .card-title {
+      font-size: 1.3rem;
+      margin: 0 0 0.4rem;
+      color: var(--text);
+    }
+    .card-date {
+      display: block;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+    }
+    .card-desc {
+      color: var(--text-2);
+      margin: 0;
+      font-size: 0.98rem;
+    }
+
+    /* ---------- ÉTAT VIDE ---------- */
+    .empty {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      color: var(--text-2);
+      padding: 2rem 0 1rem;
+      margin: 0;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 640px) {
+      .blog-head { margin-bottom: 2.25rem; }
+      .blog-head h1 { font-size: 2.1rem; }
+      .blog-intro { font-size: 1.05rem; }
+      .posts-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </BaseLayout>
