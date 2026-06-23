@@ -81,7 +81,7 @@ Une fois la voix validée, tu exportes l'audio (en qualité maximale disponible)
 
 ElevenLabs propose un **plan gratuit** limité en nombre de caractères par mois — suffisant pour tester et faire une première vidéo courte, pas pour produire en continu. Les plans payants démarrent bas (le plan Creator tourne autour de 22 $/mois) et débloquent plus de volume et le clonage de voix. Les tarifs et quotas changent régulièrement, donc vérifie la grille à jour sur le site avant de t'engager.
 
-Mon conseil : **commence sur le plan gratuit**, sors une ou deux vidéos, vois si la voix off IA colle à ta chaîne, et passe au payant seulement quand tu produis assez pour rentabiliser l'abonnement.
+Mon conseil : **commence sur le plan gratuit** pour tester la qualité et voir si la voix off IA colle à ta chaîne. Attention quand même : le plan gratuit n'autorise pas l'usage commercial, donc avant de publier sur une chaîne monétisée, passe au minimum sur un plan payant. Pour le détail des prix, ce qui vaut le coup ou non et mon retour après plusieurs mois d'usage, j'ai écrit un [avis complet sur ElevenLabs](/blog/avis-elevenlabs).
 
 ## Les limites à connaître (la partie que les autres ne disent pas)
 
