@@ -1,0 +1,46 @@
+---
+// Bouton d'affiliation réutilisable.
+//
+// Donne SOIT une clé du config centralisé (affiliateKey, recommandé),
+// SOIT une URL directe (href). rel="sponsored" est exigé par Google
+// pour les liens commerciaux ; on ajoute nofollow + noopener par sécurité.
+//
+// `source` = identifiant de l'article d'où vient le clic (ex: "script-youtube").
+// Il est transmis à affiliateUrl() pour tracer quelle page génère les ventes.
+import { affiliateUrl, type AffiliateKey } from "../config/affiliates";
+
+interface Props {
+  affiliateKey?: AffiliateKey;
+  href?: string;
+  label?: string;
+  source?: string;
+}
+
+const { affiliateKey, href, label = "Voir l'offre", source } = Astro.props;
+
+const finalHref = href ?? (affiliateKey ? affiliateUrl(affiliateKey, source) : undefined);
+if (!finalHref) {
+  throw new Error("AffiliateButton : fournis 'affiliateKey' ou 'href'.");
+}
+---
+
+<a class="affiliate-btn" href={finalHref} target="_blank" rel="sponsored nofollow noopener">
+  {label} <span aria-hidden="true">→</span>
+</a>
+
+<style>
+  .affiliate-btn {
+    display: inline-block;
+    background: var(--accent, #2563eb);
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+  .affiliate-btn:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+</style>

@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolCard from "../components/ToolCard.astro";
+import { getCollection } from "astro:content";
+
+// Derniers articles pour la home.
+const posts = (await getCollection("blog", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, 3);
+---
+
+<BaseLayout title="MonSite — Comparatifs et avis d'outils" description="Comparatifs, tests et avis indépendants pour choisir les meilleurs outils.">
+  <h1>Trouvez le meilleur outil, sans perdre de temps</h1>
+  <p>On teste et on compare pour vous aider à choisir. Voici un exemple de comparatif :</p>
+
+  <!-- Démonstration du composant ToolCard (le lien vient du config centralisé). -->
+  <ToolCard
+    nom="Outil Exemple"
+    note={4.5}
+    prix="29 €/mois"
+    pointsForts={["Facile à prendre en main", "Bon rapport qualité/prix", "Support en français"]}
+    affiliateKey="exemple_outil"
+  />
+
+  {posts.length > 0 && (
+    <section>
+      <h2>Derniers articles</h2>
+      <ul class="home-posts">
+        {posts.map((post) => (
+          <li><a href={`/blog/${post.id}`}>{post.data.title}</a></li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  <style>
+    h1 { font-size: 2rem; }
+    .home-posts { list-style: none; padding: 0; }
+    .home-posts li { margin-bottom: 0.5rem; }
+  </style>
+</BaseLayout>

@@ -1,0 +1,76 @@
+---
+// Carte produit/outil réutilisable pour les comparatifs.
+// Props : nom, note (sur 5), prix, liste de points forts, lien affilié.
+// Le lien affilié peut être une clé du config centralisé (affiliateKey)
+// ou une URL directe (href).
+import AffiliateButton from "./AffiliateButton.astro";
+import type { AffiliateKey } from "../config/affiliates";
+
+interface Props {
+  nom: string;
+  note: number; // sur 5
+  prix: string;
+  pointsForts: string[];
+  affiliateKey?: AffiliateKey;
+  href?: string;
+  image?: string;
+}
+
+const { nom, note, prix, pointsForts, affiliateKey, href, image } = Astro.props;
+
+const noteArrondie = Math.round(note);
+const etoiles = "★".repeat(noteArrondie) + "☆".repeat(5 - noteArrondie);
+---
+
+<article class="tool-card">
+  {image && <img src={image} alt={nom} loading="lazy" />}
+
+  <div class="tool-body">
+    <h3>{nom}</h3>
+
+    <p class="note" aria-label={`Note : ${note} sur 5`}>
+      <span class="stars">{etoiles}</span>
+      <span class="note-num">{note.toFixed(1)}/5</span>
+    </p>
+
+    <p class="prix">{prix}</p>
+
+    <ul class="points-forts">
+      {pointsForts.map((point) => <li>{point}</li>)}
+    </ul>
+
+    <AffiliateButton affiliateKey={affiliateKey} href={href} label={`Essayer ${nom}`} />
+  </div>
+</article>
+
+<style>
+  .tool-card {
+    display: flex;
+    gap: 1.25rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+  .tool-card img {
+    width: 140px;
+    height: 140px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .tool-body { flex: 1; }
+  .tool-body h3 { margin: 0 0 0.35rem; font-size: 1.2rem; }
+  .note { margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+  .stars { color: #f5a623; letter-spacing: 2px; }
+  .note-num { color: #6b7280; font-size: 0.9rem; }
+  .prix { font-size: 1.25rem; font-weight: 700; margin: 0 0 0.75rem; }
+  .points-forts { list-style: none; padding: 0; margin: 0 0 1rem; }
+  .points-forts li { padding-left: 1.4rem; position: relative; margin-bottom: 0.3rem; }
+  .points-forts li::before { content: "✔"; position: absolute; left: 0; color: #16a34a; }
+  @media (max-width: 540px) {
+    .tool-card { flex-direction: column; }
+    .tool-card img { width: 100%; }
+  }
+</style>

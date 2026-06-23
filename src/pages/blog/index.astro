@@ -1,0 +1,36 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+// Récupère les articles publiés (hors brouillons), triés du plus récent au plus ancien.
+const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
+);
+---
+
+<BaseLayout title="Blog — Comparatifs et guides" description="Tous nos comparatifs, tests et guides.">
+  <h1>Le blog</h1>
+  <ul class="post-list">
+    {posts.map((post) => (
+      <li>
+        <a href={`/blog/${post.id}`}>
+          <strong>{post.data.title}</strong>
+          <time datetime={post.data.pubDate.toISOString()}>
+            {post.data.pubDate.toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })}
+          </time>
+          <span>{post.data.description}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+
+  <style>
+    .post-list { list-style: none; padding: 0; }
+    .post-list li { border: 1px solid #eee; border-radius: 10px; margin-bottom: 1rem; }
+    .post-list a { display: block; padding: 1.25rem; text-decoration: none; color: var(--text); }
+    .post-list a:hover { background: #fafafa; }
+    .post-list strong { display: block; color: var(--accent); font-size: 1.1rem; }
+    .post-list time { display: block; color: var(--muted); font-size: 0.85rem; margin: 0.2rem 0 0.4rem; }
+    .post-list span { color: var(--muted); }
+  </style>
+</BaseLayout>

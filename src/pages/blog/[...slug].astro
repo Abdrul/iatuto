@@ -1,0 +1,42 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection, render } from "astro:content";
+
+// Génère une page statique par article Markdown.
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  image={post.data.image}
+  type="article"
+>
+  <article class="post">
+    <h1>{post.data.title}</h1>
+    <p class="meta">
+      Publié le {post.data.pubDate.toLocaleDateString("fr-FR", { year: "numeric", month: "long", day: "numeric" })}
+    </p>
+    <Content />
+  </article>
+
+  <style>
+    .post { max-width: 720px; margin: 0 auto; }
+    .post h1 { font-size: 2rem; line-height: 1.2; }
+    .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+    .post :global(h2) { margin-top: 2rem; }
+    .post :global(blockquote) {
+      border-left: 4px solid var(--accent);
+      margin: 1.5rem 0; padding: 0.5rem 1rem; background: #f8fafc; color: #374151;
+    }
+  </style>
+</BaseLayout>
