@@ -11,6 +11,10 @@ interface Props {
   type?: "website" | "article";
   /** Empêche l'indexation de la page (ex : pages légales). */
   noindex?: boolean;
+  /** Masque l'en-tête global (ex : la home qui intègre sa nav dans le hero). */
+  showHeader?: boolean;
+  /** Rend le contenu pleine largeur, sans conteneur ni padding (sections gérées par la page). */
+  bleed?: boolean;
 }
 
 const {
@@ -19,6 +23,8 @@ const {
   image = SITE.defaultOgImage,
   type = "website",
   noindex = false,
+  showHeader = true,
+  bleed = false,
 } = Astro.props;
 
 // URLs absolues (requis par Open Graph). Astro.site vient de astro.config.mjs.
@@ -53,22 +59,31 @@ const ogImage = new URL(image, Astro.site);
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+
+    <!-- Typographie : Fraunces (titres) + Inter (texte courant) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
   </head>
 
   <body>
-    <header class="site-header">
-      <nav class="container">
-        <a href="/" class="logo">{SITE.name}</a>
-        <ul>
-          <li><a href="/">Accueil</a></li>
-          <li><a href="/blog">Blog</a></li>
-          <li><a href="/a-propos">À propos</a></li>
-        </ul>
-      </nav>
-    </header>
+    {showHeader && (
+      <header class="site-header">
+        <nav class="container">
+          <a href="/" class="logo">{SITE.name}</a>
+          <ul>
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="/a-propos">À propos</a></li>
+          </ul>
+        </nav>
+      </header>
+    )}
 
-    <main class="container">
-      <slot />
+    <main>
+      {bleed ? <slot /> : <div class="page"><slot /></div>}
     </main>
 
     <footer class="site-footer">
@@ -83,40 +98,96 @@ const ogImage = new URL(image, Astro.site);
 
     <style is:global>
       :root {
-        --max-width: 1000px;
-        --accent: #2563eb;
-        --accent-dark: #1d4ed8;
-        --text: #111827;
-        --muted: #6b7280;
-        --bg: #ffffff;
+        --max-width: 1100px;
+
+        /* Palette de marque */
+        --bg: #fbfaf7;            /* blanc cassé chaud */
+        --indigo: #2d2456;       /* indigo de marque */
+        --indigo-light: #c9c3e8; /* texte sur fond sombre */
+        --amber: #e08a3c;        /* accent (boutons, liens d'action) */
+        --amber-dark: #c5752c;
+
+        --text: #1a1726;         /* texte principal */
+        --text-2: #4a4658;       /* texte secondaire */
+        --muted: #6a6678;        /* texte tertiaire */
+        --border: #ece8e0;       /* bordures */
+
+        /* Badges catégories */
+        --violet: #7a5bc7;
+        --violet-bg: #eeeaf9;
+        --green: #1d9e75;
+        --green-bg: #e1f5ee;
+        --amber-badge: #b26b2b;
+        --amber-badge-bg: #fbe9d7;
+
+        /* Compat. anciens composants/pages */
+        --accent: var(--indigo);
+        --accent-dark: var(--amber);
+
+        /* Typographie */
+        --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
+        --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       }
+
       * { box-sizing: border-box; }
+
       body {
         margin: 0;
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        font-family: var(--font-sans);
         color: var(--text);
         background: var(--bg);
-        line-height: 1.6;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
       }
-      .container { max-width: var(--max-width); margin: 0 auto; padding: 0 1rem; }
+
+      h1, h2, h3 {
+        font-family: var(--font-serif);
+        font-weight: 600;
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+        color: var(--text);
+      }
+
+      .container { max-width: var(--max-width); margin: 0 auto; padding: 0 1.25rem; }
+
       a { color: var(--accent); }
 
-      .site-header { border-bottom: 1px solid #eee; }
+      main { min-height: 70vh; }
+      .page { max-width: var(--max-width); margin: 0 auto; padding: 3rem 1.25rem; }
+
+      /* Focus clavier visible et cohérent partout */
+      a:focus-visible,
+      button:focus-visible,
+      :focus-visible {
+        outline: 3px solid var(--amber);
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+
+      .site-header { border-bottom: 1px solid var(--border); background: var(--bg); }
       .site-header nav {
         display: flex; align-items: center; justify-content: space-between;
-        padding-top: 1rem; padding-bottom: 1rem;
+        padding-top: 1.1rem; padding-bottom: 1.1rem;
       }
-      .logo { font-weight: 800; font-size: 1.3rem; text-decoration: none; color: var(--text); }
-      .site-header ul { display: flex; gap: 1.25rem; list-style: none; margin: 0; padding: 0; }
-      .site-header a { text-decoration: none; color: var(--text); }
-      .site-header a:hover { color: var(--accent); }
+      .logo { font-family: var(--font-serif); font-weight: 600; font-size: 1.35rem; text-decoration: none; color: var(--text); }
+      .site-header ul { display: flex; gap: 1.5rem; list-style: none; margin: 0; padding: 0; }
+      .site-header a { text-decoration: none; color: var(--text-2); font-weight: 500; }
+      .site-header a:hover { color: var(--amber); }
 
-      main { min-height: 70vh; padding: 2.5rem 0; }
-
-      .site-footer { border-top: 1px solid #eee; padding: 2rem 0; color: var(--muted); font-size: 0.9rem; }
+      .site-footer { border-top: 1px solid var(--border); padding: 2.5rem 0; color: var(--muted); font-size: 0.9rem; }
       .affiliate-disclosure {
-        background: #f0f6ff; border: 1px solid #d6e4ff;
-        padding: 0.75rem 1rem; border-radius: 8px;
+        background: #fff; border: 1px solid var(--border);
+        padding: 0.85rem 1.1rem; border-radius: 10px;
+      }
+      .site-footer a { color: var(--text-2); }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
       }
     </style>
   </body>

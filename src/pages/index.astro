@@ -1,41 +1,246 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import ToolCard from "../components/ToolCard.astro";
 import { getCollection } from "astro:content";
+import { SITE } from "../config/site";
 
-// Derniers articles pour la home.
+// Derniers articles publiés, du plus récent au plus ancien, limités aux 6 premiers.
+// Tout est dérivé de la collection : la page s'adapte à 0, 1 ou N articles.
 const posts = (await getCollection("blog", ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
-  .slice(0, 3);
+  .slice(0, 6);
+
+// Couleurs de badge par catégorie (cf. content.config.ts : comparatif | tutoriel | avis | guide).
+const CATEGORY_STYLES: Record<string, { label: string; bg: string; color: string }> = {
+  comparatif: { label: "Comparatif", bg: "var(--green-bg)", color: "var(--green)" },
+  guide: { label: "Guide", bg: "var(--violet-bg)", color: "var(--violet)" },
+  tutoriel: { label: "Tutoriel", bg: "var(--violet-bg)", color: "var(--violet)" },
+  avis: { label: "Avis", bg: "var(--amber-badge-bg)", color: "var(--amber-badge)" },
+};
+
+const categoryStyle = (category: string) =>
+  CATEGORY_STYLES[category] ?? {
+    label: category.charAt(0).toUpperCase() + category.slice(1),
+    bg: "var(--border)",
+    color: "var(--text-2)",
+  };
 ---
 
-<BaseLayout title="MonSite — Comparatifs et avis d'outils" description="Comparatifs, tests et avis indépendants pour choisir les meilleurs outils.">
-  <h1>Trouvez le meilleur outil, sans perdre de temps</h1>
-  <p>On teste et on compare pour vous aider à choisir. Voici un exemple de comparatif :</p>
+<BaseLayout
+  title={SITE.title}
+  description="J'utilise chaque outil IA sur mes propres vidéos et je te dis lesquels valent ton temps et ton argent."
+  showHeader={false}
+  bleed={true}
+>
+  <!-- HERO : bloc indigo plein, pleine largeur, nav intégrée -->
+  <section class="hero">
+    <div class="hero-inner">
+      <nav class="hero-nav" aria-label="Navigation principale">
+        <a href="/" class="hero-logo">{SITE.name}</a>
+        <ul>
+          <li><a href="/blog">Blog</a></li>
+          <li><a href="/a-propos">À propos</a></li>
+        </ul>
+      </nav>
 
-  <!-- Démonstration du composant ToolCard (le lien vient du config centralisé). -->
-  <ToolCard
-    nom="Outil Exemple"
-    note={4.5}
-    prix="29 €/mois"
-    pointsForts={["Facile à prendre en main", "Bon rapport qualité/prix", "Support en français"]}
-    affiliateKey="exemple_outil"
-  />
+      <div class="hero-content">
+        <p class="eyebrow">Testé · comparé · tranché</p>
+        <h1>Les outils IA pour créateurs, testés pour de vrai.</h1>
+        <p class="subtitle">
+          J'utilise chaque outil sur mes propres vidéos et je te dis lesquels
+          valent ton temps et ton argent.
+        </p>
+        <a href="/blog" class="btn-amber">Voir les comparatifs</a>
+      </div>
+    </div>
+  </section>
 
-  {posts.length > 0 && (
-    <section>
-      <h2>Derniers articles</h2>
-      <ul class="home-posts">
-        {posts.map((post) => (
-          <li><a href={`/blog/${post.id}`}>{post.data.title}</a></li>
-        ))}
-      </ul>
-    </section>
-  )}
+  <!-- DERNIERS ARTICLES -->
+  <section class="latest">
+    <div class="latest-inner">
+      <p class="section-label">Derniers articles</p>
+
+      {posts.length > 0 ? (
+        <div class="posts-grid">
+          {posts.map((post) => {
+            const cat = categoryStyle(post.data.category);
+            return (
+              <article class="card">
+                <a class="card-link" href={`/blog/${post.id}`}>
+                  <span class="badge" style={`background:${cat.bg};color:${cat.color};`}>
+                    {cat.label}
+                  </span>
+                  <h3 class="card-title">{post.data.title}</h3>
+                  <p class="card-desc">{post.data.description}</p>
+                  <span class="card-cta">Lire l'article →</span>
+                </a>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <p class="empty">Les premiers articles arrivent très bientôt.</p>
+      )}
+    </div>
+  </section>
 
   <style>
-    h1 { font-size: 2rem; }
-    .home-posts { list-style: none; padding: 0; }
-    .home-posts li { margin-bottom: 0.5rem; }
+    /* ---------- HERO ---------- */
+    .hero {
+      background: var(--indigo);
+      color: #fff;
+    }
+    .hero-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 1.25rem 1.25rem 5rem;
+    }
+
+    .hero-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0 3.5rem;
+    }
+    .hero-logo {
+      font-family: var(--font-serif);
+      font-weight: 600;
+      font-size: 1.35rem;
+      color: #fff;
+      text-decoration: none;
+    }
+    .hero-nav ul {
+      display: flex;
+      gap: 1.75rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .hero-nav a {
+      color: var(--indigo-light);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .hero-nav ul a:hover { color: #fff; }
+    .hero-nav :focus-visible { outline-color: var(--amber); }
+
+    .hero-content { max-width: 720px; }
+    .eyebrow {
+      color: var(--amber);
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+      margin: 0 0 1rem;
+    }
+    .hero h1 {
+      color: #fff;
+      font-size: 3rem;
+      margin: 0 0 1.25rem;
+    }
+    .subtitle {
+      color: var(--indigo-light);
+      font-size: 1.2rem;
+      line-height: 1.6;
+      margin: 0 0 2rem;
+      max-width: 600px;
+    }
+
+    .btn-amber {
+      display: inline-block;
+      background: var(--amber);
+      color: #fff;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 0.85rem 1.6rem;
+      border-radius: 10px;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .btn-amber:hover { background: var(--amber-dark); transform: translateY(-1px); }
+
+    /* ---------- DERNIERS ARTICLES ---------- */
+    .latest-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 4rem 1.25rem 5rem;
+    }
+    .section-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin: 0 0 1.75rem;
+    }
+
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+    }
+    .card:hover {
+      box-shadow: 0 12px 30px rgba(45, 36, 86, 0.08);
+      transform: translateY(-2px);
+      border-color: #e0dbd0;
+    }
+    .card-link {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      height: 100%;
+      padding: 1.5rem;
+      text-decoration: none;
+      color: inherit;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+    }
+    .card-title {
+      font-size: 1.3rem;
+      margin: 0 0 0.6rem;
+      color: var(--text);
+    }
+    .card-desc {
+      color: var(--text-2);
+      margin: 0 0 1.25rem;
+      font-size: 0.98rem;
+    }
+    .card-cta {
+      margin-top: auto;
+      color: var(--amber);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    /* ---------- ÉTAT VIDE ---------- */
+    .empty {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      color: var(--text-2);
+      padding: 2rem 0 1rem;
+      margin: 0;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 2.1rem; }
+      .subtitle { font-size: 1.05rem; }
+      .hero-inner { padding-bottom: 3.5rem; }
+      .hero-nav { padding-bottom: 2.5rem; }
+      .posts-grid { grid-template-columns: 1fr; }
+      .latest-inner { padding: 3rem 1.25rem 4rem; }
+    }
   </style>
 </BaseLayout>

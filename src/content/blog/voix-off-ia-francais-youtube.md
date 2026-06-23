@@ -13,6 +13,7 @@ tags:
     "vidéo faceless",
     "intelligence artificielle",
   ]
+draft: false
 ---
 
 Si tu veux lancer une chaîne YouTube sans te filmer, le vrai mur n'est pas le montage ni les images : c'est la voix. Une voix off enregistrée au micro demande du matériel, une pièce traitée, de la diction et plusieurs prises. La voix off IA contourne tout ça — à condition de savoir s'en servir, parce que mal réglée, elle sonne robot à plein nez et tue la vidéo en trois secondes.
