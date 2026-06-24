@@ -2,12 +2,20 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 import { SITE } from "../config/site";
+import { getUsedCategories, categoryMeta } from "../lib/categories";
 
 // Derniers articles publiés, du plus récent au plus ancien, limités aux 6 premiers.
 // Tout est dérivé de la collection : la page s'adapte à 0, 1 ou N articles.
 const posts = (await getCollection("blog", ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
   .slice(0, 6);
+
+// Onglets de catégorie de la nav du hero : identiques au header global, déduits
+// des catégories réellement utilisées (aucune valeur figée).
+const navCategories = (await getUsedCategories()).map((category) => ({
+  href: `/categorie/${category}`,
+  label: categoryMeta(category).label,
+}));
 
 // Couleurs de badge par catégorie (cf. content.config.ts : comparatif | tutoriel | avis | guide).
 const CATEGORY_STYLES: Record<string, { label: string; bg: string; color: string }> = {
@@ -38,6 +46,9 @@ const categoryStyle = (category: string) =>
         <a href="/" class="hero-logo">{SITE.name}</a>
         <ul>
           <li><a href="/blog">Blog</a></li>
+          {navCategories.map((cat) => (
+            <li><a href={cat.href}>{cat.label}</a></li>
+          ))}
           <li><a href="/a-propos">À propos</a></li>
         </ul>
       </nav>

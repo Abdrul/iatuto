@@ -1,6 +1,14 @@
 ---
 // Layout de base : <head> SEO + Open Graph + Twitter Card, en-tête et pied de page.
 import { SITE } from "../config/site";
+import { getUsedCategories, categoryMeta } from "../lib/categories";
+
+// Onglets de catégorie générés à partir des catégories réellement utilisées
+// par un article publié (aucune valeur figée ici).
+const navCategories = (await getUsedCategories()).map((category) => ({
+  href: `/categorie/${category}`,
+  label: categoryMeta(category).label,
+}));
 
 interface Props {
   title: string;
@@ -79,6 +87,9 @@ const ogImage = new URL(image, Astro.site);
           <a href="/" class="logo">{SITE.name}</a>
           <ul>
             <li><a href="/blog">Blog</a></li>
+            {navCategories.map((cat) => (
+              <li><a href={cat.href}>{cat.label}</a></li>
+            ))}
             <li><a href="/a-propos">À propos</a></li>
           </ul>
         </nav>

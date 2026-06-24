@@ -2,25 +2,41 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 import { categoryMeta } from "../../lib/categories";
+import { SITE } from "../../config/site";
 
-// Récupère les articles publiés (hors brouillons), triés du plus récent au plus ancien.
-const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
-);
+// Génère une page par catégorie réellement utilisée par un article publié.
+// Aucune catégorie n'est codée en dur : la liste se déduit de la collection,
+// donc une nouvelle catégorie dans un futur article crée sa page tout seul.
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  const categories = [...new Set(posts.map((post) => post.data.category))];
+
+  return categories.map((category) => {
+    const articles = posts
+      .filter((post) => post.data.category === category)
+      .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+
+    return { params: { category }, props: { category, articles } };
+  });
+}
+
+const { category, articles } = Astro.props;
+const meta = categoryMeta(category);
+
+const seoTitle = `${meta.heading} — ${SITE.name}`;
+const seoDescription = meta.intro;
 ---
 
-<BaseLayout title="Blog — Comparatifs et guides" description="Tous nos comparatifs, tests et guides.">
-  <header class="blog-head">
-    <h1>Le blog</h1>
-    <p class="blog-intro">
-      Comparatifs, tests et guides sur les outils IA pour créateurs — tous
-      écrits après usage réel.
-    </p>
+<BaseLayout title={seoTitle} description={seoDescription}>
+  <header class="cat-head">
+    <p class="cat-eyebrow">Catégorie</p>
+    <h1>{meta.heading}</h1>
+    <p class="cat-intro">{meta.intro}</p>
   </header>
 
-  {posts.length > 0 ? (
+  {articles.length > 0 ? (
     <div class="posts-grid">
-      {posts.map((post) => {
+      {articles.map((post) => {
         const cat = categoryMeta(post.data.category);
         return (
           <article class="card">
@@ -39,21 +55,31 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
       })}
     </div>
   ) : (
-    <p class="empty">Les premiers articles arrivent très bientôt.</p>
+    <p class="empty">Aucun article dans cette catégorie pour le moment.</p>
   )}
+
+  <p class="back-link"><a href="/blog">← Tous les articles</a></p>
 
   <style>
     /* ---------- EN-TÊTE ---------- */
-    .blog-head { margin-bottom: 3rem; }
-    .blog-head h1 { font-size: 2.6rem; margin: 0 0 0.75rem; }
-    .blog-intro {
+    .cat-head { margin-bottom: 3rem; }
+    .cat-eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--amber);
+      margin: 0 0 0.5rem;
+    }
+    .cat-head h1 { font-size: 2.6rem; margin: 0 0 0.75rem; }
+    .cat-intro {
       color: var(--text-2);
       font-size: 1.15rem;
       max-width: 620px;
       margin: 0;
     }
 
-    /* ---------- GRILLE DE CARTES (cohérente avec l'accueil) ---------- */
+    /* ---------- GRILLE DE CARTES (identique à /blog) ---------- */
     .posts-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -106,7 +132,7 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
       font-size: 0.98rem;
     }
 
-    /* ---------- ÉTAT VIDE ---------- */
+    /* ---------- ÉTAT VIDE + RETOUR ---------- */
     .empty {
       font-family: var(--font-serif);
       font-size: 1.4rem;
@@ -114,12 +140,15 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
       padding: 2rem 0 1rem;
       margin: 0;
     }
+    .back-link { margin-top: 2.5rem; }
+    .back-link a { color: var(--text-2); text-decoration: none; font-weight: 500; }
+    .back-link a:hover { color: var(--amber); }
 
     /* ---------- RESPONSIVE ---------- */
     @media (max-width: 640px) {
-      .blog-head { margin-bottom: 2.25rem; }
-      .blog-head h1 { font-size: 2.1rem; }
-      .blog-intro { font-size: 1.05rem; }
+      .cat-head { margin-bottom: 2.25rem; }
+      .cat-head h1 { font-size: 2.1rem; }
+      .cat-intro { font-size: 1.05rem; }
       .posts-grid { grid-template-columns: 1fr; }
     }
   </style>
