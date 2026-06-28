@@ -44,7 +44,17 @@ const categoryStyle = (category: string) =>
     <div class="hero-inner">
       <nav class="hero-nav" aria-label="Navigation principale">
         <a href="/" class="hero-logo">{SITE.name}</a>
-        <ul>
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-label="Ouvrir le menu"
+          aria-expanded="false"
+          aria-controls="hero-menu"
+          data-nav-toggle
+        >
+          <span class="nav-toggle-bars" aria-hidden="true"></span>
+        </button>
+        <ul id="hero-menu">
           <li><a href="/blog">Blog</a></li>
           {navCategories.map((cat) => (
             <li><a href={cat.href}>{cat.label}</a></li>
@@ -134,6 +144,8 @@ const categoryStyle = (category: string) =>
     }
     .hero-nav ul a:hover { color: #fff; }
     .hero-nav :focus-visible { outline-color: var(--amber); }
+    /* Burger clair, lisible sur l'indigo (le style des barres vient du global). */
+    .hero-nav .nav-toggle { color: #fff; }
 
     .hero-content { max-width: 720px; }
     .eyebrow {
@@ -252,6 +264,33 @@ const categoryStyle = (category: string) =>
       .hero-nav { padding-bottom: 2.5rem; }
       .posts-grid { grid-template-columns: 1fr; }
       .latest-inner { padding: 3rem 1.25rem 4rem; }
+    }
+
+    /* ---------- NAV MOBILE : hero indigo ---------- */
+    @media (max-width: 767px) {
+      /* On retire l'espace sous la nav (reporté sur le contenu) pour ancrer
+         le menu déroulant juste sous le logo/burger. */
+      .hero-nav { position: relative; padding-bottom: 0; }
+      .hero-content { margin-top: 2.5rem; }
+      .hero-nav ul {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 0.6rem;
+        min-width: 200px;
+        flex-direction: column;
+        gap: 0;
+        background: #251d49;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 12px;
+        padding: 0.5rem 0;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+        z-index: 50;
+      }
+      .hero-nav ul.is-open { display: flex; }
+      .hero-nav li { width: 100%; }
+      .hero-nav ul a { display: block; padding: 0.7rem 1.25rem; }
     }
   </style>
 </BaseLayout>
